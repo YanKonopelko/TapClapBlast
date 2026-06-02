@@ -316,7 +316,8 @@
   {
     "__type__": "TypeToTilePair",
     "type": 1,
-    "prefab": null
+    "colors": [],
+    "basePrefab": null
   },
   {
     "__type__": "cc.Node",
@@ -501,7 +502,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "Tile_Base_Yellow",
+    "_name": "Tile_Base_Green",
     "_objFlags": 0,
     "_parent": {
       "__id__": 2
@@ -511,7 +512,7 @@
         "__id__": 14
       }
     ],
-    "_active": false,
+    "_active": true,
     "_components": [
       {
         "__id__": 16
@@ -563,7 +564,7 @@
     "_is3DNode": false,
     "_groupIndex": 0,
     "groupIndex": 0,
-    "_id": "ee/QGSDYxJkqVY2c0q6zmM"
+    "_id": "c9uXEzKBJJZJzlBW375mZU"
   },
   {
     "__type__": "cc.Node",
@@ -625,7 +626,7 @@
     "_is3DNode": false,
     "_groupIndex": 0,
     "groupIndex": 0,
-    "_id": "fbyS/YNhNO+5n+iOicvfuz"
+    "_id": "337dNGNMBAx6arDwodlCvO"
   },
   {
     "__type__": "cc.Sprite",
@@ -643,7 +644,7 @@
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 771,
     "_spriteFrame": {
-      "__uuid__": "a7a0597b-7e89-464f-a792-3dfd86c970ed"
+      "__uuid__": "158e7aa3-e6b9-42a6-bfcf-a25888f2f3cf"
     },
     "_type": 0,
     "_sizeMode": 1,
@@ -657,7 +658,7 @@
     "_fillRange": 0,
     "_isTrimmedMode": true,
     "_atlas": null,
-    "_id": "82fgJMhqVBjKFD77rrghKI"
+    "_id": "1fv20QnBxM0KNoEGiDzhCv"
   },
   {
     "__type__": "987b0Li9qJMqY9H3b459+Dq",
@@ -673,7 +674,7 @@
     "sprite": {
       "__id__": 15
     },
-    "_id": "17yvSL05lGqKtD0yCIFGz7"
+    "_id": "67d5o+z2VCVa5loS0znVzD"
   },
   {
     "__type__": "TileInfo",

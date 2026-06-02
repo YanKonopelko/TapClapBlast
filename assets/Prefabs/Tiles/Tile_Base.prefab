@@ -13,7 +13,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "Tile_Base_Yellow",
+    "_name": "Tile_Base_Blue",
     "_objFlags": 0,
     "_parent": null,
     "_children": [
@@ -97,9 +97,9 @@
     "_opacity": 255,
     "_color": {
       "__type__": "cc.Color",
-      "r": 255,
-      "g": 255,
-      "b": 255,
+      "r": 0,
+      "g": 0,
+      "b": 0,
       "a": 255
     },
     "_contentSize": {
@@ -157,7 +157,7 @@
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 771,
     "_spriteFrame": {
-      "__uuid__": "a7a0597b-7e89-464f-a792-3dfd86c970ed"
+      "__uuid__": "8b57c832-aa6a-435d-a21a-cd9d5c6efaa5"
     },
     "_type": 0,
     "_sizeMode": 1,
@@ -181,7 +181,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "67TwEsFe1MAZ5eayh+nJdz",
+    "fileId": "e973l5YtJNwrRRvobDiGEp",
     "sync": false
   },
   {
@@ -202,7 +202,7 @@
   },
   {
     "__type__": "TileInfo",
-    "color": 4,
+    "color": 3,
     "type": 1
   },
   {

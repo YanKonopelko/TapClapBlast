@@ -13,7 +13,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "Tile_Base_Yellow",
+    "_name": "Tile_BigBomb",
     "_objFlags": 0,
     "_parent": null,
     "_children": [
@@ -104,8 +104,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 100,
-      "height": 112
+      "width": 83,
+      "height": 96
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -157,7 +157,7 @@
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 771,
     "_spriteFrame": {
-      "__uuid__": "a7a0597b-7e89-464f-a792-3dfd86c970ed"
+      "__uuid__": "7eaed829-b3d6-4e4e-bc6c-77a9df299c3b"
     },
     "_type": 0,
     "_sizeMode": 1,
@@ -181,7 +181,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "67TwEsFe1MAZ5eayh+nJdz",
+    "fileId": "01Kxa58fxGkJ/pibBy49ls",
     "sync": false
   },
   {
@@ -202,8 +202,8 @@
   },
   {
     "__type__": "TileInfo",
-    "color": 4,
-    "type": 1
+    "color": 0,
+    "type": 3
   },
   {
     "__type__": "cc.PrefabInfo",
