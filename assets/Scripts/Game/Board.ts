@@ -1,43 +1,58 @@
 import { RandomWithSeedGenerator } from "../Utills/Random";
-import Grid from "./Grid";
+import { BoardAction, EBoardActionType } from "./BoardAction";
+import { BoardInfo } from "./BoardInfo";
+import { ETileType } from "./ETileType";
 import TileInfo from "./TileInfo";
 
 export default class Board{
 
-    private _seed: number = 0;
-    private _generatorStepCount: number = 0;
-    private _tiles: TileInfo[][] = [];
-    private _grid: Grid|null = null;
+    private BoardInfo: BoardInfo|null = null;
     
     private _generator: () => number;
 
     public get Tiles(): TileInfo[][] {
-        return this._tiles;
+        return this.BoardInfo!.Tiles;
     }
 
-    constructor(seed: number,grid: Grid ,tiles: TileInfo[][], generatorStepCount: number = 0) {
-        this._seed = seed;
-        this._generator = RandomWithSeedGenerator(seed);
-        this._tiles = tiles;
-        this._grid = grid;
-        this._generatorStepCount = generatorStepCount;
+    private actionQueue: BoardAction[] = [];
+
+    constructor(BoardInfo: BoardInfo) {
+        this.BoardInfo = BoardInfo;
+        this._generator = RandomWithSeedGenerator(BoardInfo.Seed);
+        this.GenereratorPrepare();
+        this.FillBoard();
+    }
+
+    private GenereratorPrepare(){
+        for(let i = 0; i < this.BoardInfo!.GeneratorStepCount; i++) {
+            this._generator();
+        }
+    }
+
+    private FillBoard(): void {
+        if(!this.BoardInfo) return;
+        for(let i = 0; i < this.BoardInfo.Grid!.Rows; i++) {
+            for(let j = 0; j < this.BoardInfo.Grid!.Columns; j++) {
+                if(!this.BoardInfo.Grid?.Grid[i][j]) continue;
+                const tileInfo = new TileInfo(this.GetRandomTileColor(), ETileType.Tile);
+                this.BoardInfo!.Tiles[i][j] = tileInfo;
+                this.actionQueue.push({TileInfo: tileInfo, Type: EBoardActionType.AddTile});
+            }
+        }
+    }
+
+    private GetRandomTileColor(): number {
+        return Math.floor(this._generator() * 5) + 1;
+    }
+
+    private OnTileClick():BoardAction[]{
+
+
+        return [];
     }
 
 
-    private BoardUpdate(): void {
 
-    }
 
-    public FromJson(){
-
-    }
-
-    public AsJson():cc.Object{
-        const obj = new cc.Object() as any;
-        obj["SEED"] = this._seed;
-        obj["GENERATOR_STEP_COUNT"] = this._generatorStepCount;
-        obj["TILES"] = this._tiles;
-        obj["GRID"] = this._grid;
-        return obj;
-    }
 }
+

@@ -17,4 +17,8 @@ export default class TileInfo {
         return this.type;
     }
     
+    constructor(color: ETileColor, type: ETileType) {
+        this.color = color;
+        this.type = type;
+    }
 }

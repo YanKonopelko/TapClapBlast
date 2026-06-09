@@ -40,8 +40,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 0,
-      "height": 0
+      "width": 100,
+      "height": 100
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -185,7 +185,7 @@
     "sync": false
   },
   {
-    "__type__": "987b0Li9qJMqY9H3b459+Dq",
+    "__type__": "df3a2o9p/BLXb9jdY4qMgKi",
     "_name": "",
     "_objFlags": 0,
     "node": {
@@ -195,14 +195,11 @@
     "tileInfo": {
       "__id__": 6
     },
-    "sprite": {
-      "__id__": 3
-    },
     "_id": ""
   },
   {
     "__type__": "TileInfo",
-    "color": 0,
+    "color": 1,
     "type": 4
   },
   {
