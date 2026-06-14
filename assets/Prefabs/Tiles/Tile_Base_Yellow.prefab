@@ -25,10 +25,13 @@
     "_components": [
       {
         "__id__": 5
+      },
+      {
+        "__id__": 7
       }
     ],
     "_prefab": {
-      "__id__": 7
+      "__id__": 8
     },
     "_opacity": 255,
     "_color": {
@@ -195,12 +198,35 @@
     "tileInfo": {
       "__id__": 6
     },
+    "tileAnimation": {
+      "__id__": 7
+    },
+    "tileName": "TileDestroy",
     "_id": ""
   },
   {
     "__type__": "TileInfo",
     "color": 4,
     "type": 1
+  },
+  {
+    "__type__": "cc.Animation",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 1
+    },
+    "_enabled": true,
+    "_defaultClip": {
+      "__uuid__": "6888bb00-60d8-416e-aac1-8c021c83990b"
+    },
+    "_clips": [
+      {
+        "__uuid__": "6888bb00-60d8-416e-aac1-8c021c83990b"
+      }
+    ],
+    "playOnLoad": false,
+    "_id": ""
   },
   {
     "__type__": "cc.PrefabInfo",

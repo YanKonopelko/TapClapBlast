@@ -1,5 +1,9 @@
+import Profile from "../Profile";
 import BoardFabric from "../Utills/BoardFabric";
 import Board from "./Board";
+import { BoardAction, EBoardActionType } from "./BoardAction";
+import { ETileType } from "./ETileType";
+import TileInfo from "./TileInfo";
 import TileView from "./TileView";
 import TypeToTilePair from "./TypeToTilePair";
 
@@ -9,13 +13,20 @@ const { ccclass, property } = cc._decorator;
 export default class BoardDrawer extends cc.Component {
 
     @property({ type: [TypeToTilePair] }) private tilePrefabs: TypeToTilePair[] = [];
-    @property({ type: cc.JsonAsset }) private boardJson: cc.JsonAsset|null = null;
-    @property({ type: cc.Node }) private tilesParent: cc.Node|null = null;
+    @property({ type: cc.JsonAsset }) private boardJson: cc.JsonAsset | null = null;
+    @property({ type: cc.Node }) private tilesParent: cc.Node | null = null;
+    
 
+    private _tiles : TileView[][] = [];
     private board: Board | null = null;
     start() {
 
-        this.board = BoardFabric.CreateRandomBoard(cc.size(8, 8));
+        if (Profile.Instance.Board) {
+            this.board = Profile.Instance.Board;
+        } else {
+            this.board = BoardFabric.CreateRandomBoardWithSeed(cc.size(8, 8), 200);
+        }
+
         this.DrawBoard();
     }
 
@@ -24,21 +35,91 @@ export default class BoardDrawer extends cc.Component {
         for (let i = 0; i < this.board.Tiles.length; i++) {
             for (let j = 0; j < this.board.Tiles[i].length; j++) {
                 const tileInfo = this.board.Tiles[i][j];
-                if (tileInfo.Type === 0) continue;
-                const prefabs = this.tilePrefabs.find(p => p.Type === tileInfo.Type);
-                if (!prefabs) continue;
-                const prefab = prefabs.GetPrefabByColor(tileInfo.Color);
-                if (!prefab) continue;
-                const tileNode = cc.instantiate(prefab);
+                const tileNode = this.CreateTile(tileInfo);
+                if (!tileNode) continue;
                 this.tilesParent?.addChild(tileNode);
-                tileNode.getComponent(TileView)?.Init(()=>{ this.OnTileClick(new cc.Vec2(j, i)); });
-                tileNode.setPosition(j * 100, -i * 100);
+                this.PlaceTile(tileNode, new cc.Vec2(j, i));
+                tileNode.getComponent(TileView)?.Init(() => { this.OnTileClick(new cc.Vec2(j, i)); });
             }
-        }   
+        }
     }
 
-    private OnTileClick(index:cc.Vec2): void {
+    private CreateTile(tileInfo: TileInfo): cc.Node | null {
+        if (tileInfo.Type === 0) return null;
+        const prefabs = this.tilePrefabs.find(p => p.Type === tileInfo.Type);
+        if (!prefabs) return null;
+        const prefab = prefabs.GetPrefabByColor(tileInfo.Color);
+        if (!prefab) return null;
+        const tileNode = cc.instantiate(prefab);
+
+        return tileNode;
+
+    }
+    private async OnTileClick(index: cc.Vec2): Promise<void> {
+        if (!this.board) return;
+        let actions = this.board.OnTileClick(index);
+        for (let i = 0; i < actions.length; i++) {
+            const action = actions[i];
+            await this.PerformAction(action);
+        }
         console.log("Tile clicked at: " + index);
+        console.log("Actions: ", actions);
     }
 
+    private async PerformAction(boardAction: BoardAction): Promise<void> {
+
+        let pos = boardAction.Position;
+        let oldPos = boardAction.OldPosition;
+        switch (boardAction.Type) {
+            case EBoardActionType.AddTile:
+                const tileNode = this.CreateTile(boardAction.TileInfo);
+                if (!tileNode) return;
+                this.tilesParent?.addChild(tileNode);
+                if(oldPos){
+                    this.MoveTile(oldPos, pos);
+                }
+                else{
+                    this.PlaceTile(tileNode, pos);
+                }
+                break;
+            case EBoardActionType.TileMatch:
+                await this.DestroyTile(pos);
+
+                // switch (boardAction.TileInfo.Type) {
+                //     case ETileType.Tile:
+                //         break;
+                //     case ETileType.Bomb:
+                //         break;
+                //     case ETileType.BIG_BOMB:
+                //         break;
+                //     case ETileType.Fireworks_Horizontal:
+                //         break;
+                //     case ETileType.Fireworks_Vertical:
+                //         break;
+                // }
+
+                break;
+            case EBoardActionType.MoveTile:
+                this.MoveTile(oldPos!, pos);
+                break;
+        }
+    }
+
+
+    private async DestroyTile(pos: cc.Vec2): Promise<void> {
+        await this._tiles[pos.y][pos.x].Destroy();
+    }
+
+    private PlaceTile(tileView: cc.Node, pos: cc.Vec2): void {
+        tileView.setPosition(pos.x * 100, -pos.y * 100);
+    }
+
+    private async MoveTile(from: cc.Vec2, to: cc.Vec2): Promise<void> {
+        if(from){
+
+        }
+        else{
+            
+        }
+    }
 }

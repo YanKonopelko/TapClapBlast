@@ -18,7 +18,20 @@ export default class BoardFabric {
             }
             tiles[i] = [];
         }
-        let board: Board = new Board({Seed: 200, Grid: new Grid(greed), Tiles: tiles, GeneratorStepCount: 0});
+        let board: Board = new Board({Seed: Math.random(), Grid: new Grid(greed), Tiles: tiles, GeneratorStepCount: 0});
+        return board;
+    }
+     public static CreateRandomBoardWithSeed(size:cc.Size, seed: number): Board {
+        var greed: boolean[][] = [];
+        var tiles: TileInfo[][] = [];
+        for (let i = 0; i < size.height; i++) {
+            greed[i] = [];
+            for (let j = 0; j < size.width; j++) {
+                greed[i][j] = true;
+            }
+            tiles[i] = [];
+        }
+        let board: Board = new Board({Seed: seed, Grid: new Grid(greed), Tiles: tiles, GeneratorStepCount: 0});
         return board;
     }
 }
