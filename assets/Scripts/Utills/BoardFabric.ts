@@ -1,11 +1,12 @@
 import Board from "../Game/Board";
+import { BoardInfo } from "../Game/BoardInfo";
 import Grid from "../Game/Grid";
 import TileInfo from "../Game/TileInfo";
 
 export default class BoardFabric {
 
-    public static CreateBoardFromConfig(grid: boolean[][],_tiles: TileInfo[][],seed: number, generatorStepCount: number = 0): Board {
-        let board: Board = new Board({Seed: seed, Grid: new Grid(grid), Tiles: _tiles, GeneratorStepCount: generatorStepCount});
+    public static CreateBoardFromConfig(BoardInfo: BoardInfo): Board {
+        let board: Board = new Board(BoardInfo);
         return board;
     }
     public static CreateRandomBoard(size:cc.Size): Board {

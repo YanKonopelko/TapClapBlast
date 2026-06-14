@@ -1,4 +1,6 @@
 import Board from "./Game/Board";
+import { BoardInfo } from "./Game/BoardInfo";
+import BoardFabric from "./Utills/BoardFabric";
 
 
 export default class Profile {
@@ -18,12 +20,18 @@ export default class Profile {
         return this._board;
     }
 
-    
+      public set Board(board: Board | null) {
+        this._board = board;
+      }
+
     public Load(): void {
         const profileData = window.localStorage.getItem("profile");
         if (profileData) {
             const profile = JSON.parse(profileData);
-            this._board = profile._board;
+            if(profile.board){
+                let boardInfo = profile.board as BoardInfo;
+                this._board = BoardFabric.CreateBoardFromConfig(boardInfo);
+            }
         }
     }
 
@@ -32,7 +40,9 @@ export default class Profile {
     }
 
     private GetString(): string {
-        return JSON.stringify(this);
+        const jsonObject = new Object() as any;
+        jsonObject.board = this._board?.BoardInfo;
+        return JSON.stringify(jsonObject);
     }
 
 }

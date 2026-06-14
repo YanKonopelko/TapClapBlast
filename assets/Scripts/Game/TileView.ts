@@ -15,6 +15,7 @@ export default class TileView extends cc.Component {
     private onClickAction: Function = () => {};
 
     public Init(onClickAction: Function ):void{
+        this.node.off(cc.Node.EventType.TOUCH_END, this.onClickAction, this);
         this.onClickAction = onClickAction;
         this.node.on(cc.Node.EventType.TOUCH_END, onClickAction, this);
     } 

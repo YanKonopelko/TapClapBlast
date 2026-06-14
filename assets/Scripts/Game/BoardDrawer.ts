@@ -15,44 +15,48 @@ export default class BoardDrawer extends cc.Component {
     @property({ type: [TypeToTilePair] }) private tilePrefabs: TypeToTilePair[] = [];
     @property({ type: cc.JsonAsset }) private boardJson: cc.JsonAsset | null = null;
     @property({ type: cc.Node }) private tilesParent: cc.Node | null = null;
-    
 
-    private _tiles : TileView[][] = [];
+
+    private _tiles: TileView[][] = [];
     private board: Board | null = null;
     start() {
 
-        if (Profile.Instance.Board) {
-            this.board = Profile.Instance.Board;
-        } else {
-            this.board = BoardFabric.CreateRandomBoardWithSeed(cc.size(8, 8), 200);
-        }
+        // if (Profile.Instance.Board) {
+        //     this.board = Profile.Instance.Board;
+        // } else {
+        this.board = BoardFabric.CreateRandomBoardWithSeed(cc.size(8, 8), 200);
+        // }
 
         this.DrawBoard();
     }
 
     public DrawBoard(): void {
         if (!this.board) return;
+        this._tiles = [];
         for (let i = 0; i < this.board.Tiles.length; i++) {
+            this._tiles[i] = [];
             for (let j = 0; j < this.board.Tiles[i].length; j++) {
                 const tileInfo = this.board.Tiles[i][j];
-                const tileNode = this.CreateTile(tileInfo);
-                if (!tileNode) continue;
-                this.tilesParent?.addChild(tileNode);
-                this.PlaceTile(tileNode, new cc.Vec2(j, i));
-                tileNode.getComponent(TileView)?.Init(() => { this.OnTileClick(new cc.Vec2(j, i)); });
+                const pos = new cc.Vec2(j,i);
+                const tileView = this.CreateTile(tileInfo,pos);
+                if (!tileView) continue;
+                this.tilesParent?.addChild(tileView.node);
+                this.PlaceTile(tileView.node, pos);
             }
         }
     }
 
-    private CreateTile(tileInfo: TileInfo): cc.Node | null {
+    private CreateTile(tileInfo: TileInfo,index:cc.Vec2): TileView | null {
         if (tileInfo.Type === 0) return null;
         const prefabs = this.tilePrefabs.find(p => p.Type === tileInfo.Type);
         if (!prefabs) return null;
         const prefab = prefabs.GetPrefabByColor(tileInfo.Color);
         if (!prefab) return null;
         const tileNode = cc.instantiate(prefab);
-
-        return tileNode;
+        let tileView = tileNode.getComponent(TileView);
+        tileView?.Init(() => { this.OnTileClick(index); });
+        this._tiles[index.y][index.x] = tileView;
+        return tileView;
 
     }
     private async OnTileClick(index: cc.Vec2): Promise<void> {
@@ -72,15 +76,15 @@ export default class BoardDrawer extends cc.Component {
         let oldPos = boardAction.OldPosition;
         switch (boardAction.Type) {
             case EBoardActionType.AddTile:
-                const tileNode = this.CreateTile(boardAction.TileInfo);
-                if (!tileNode) return;
-                this.tilesParent?.addChild(tileNode);
-                if(oldPos){
-                    this.MoveTile(oldPos, pos);
-                }
-                else{
-                    this.PlaceTile(tileNode, pos);
-                }
+                const tileView = this.CreateTile(boardAction.TileInfo,pos);
+                if (!tileView) return;
+                this.tilesParent?.addChild(tileView.node);
+                // if (oldPos) {
+                //     this.MoveTile(oldPos, pos);
+                // }
+                // else {
+                this.PlaceTile(tileView.node, pos);
+                // }
                 break;
             case EBoardActionType.TileMatch:
                 await this.DestroyTile(pos);
@@ -115,11 +119,11 @@ export default class BoardDrawer extends cc.Component {
     }
 
     private async MoveTile(from: cc.Vec2, to: cc.Vec2): Promise<void> {
-        if(from){
+        if (from) {
 
         }
-        else{
-            
+        else {
+
         }
     }
 }
