@@ -65,24 +65,22 @@ export default class BoardDrawer extends cc.Component {
         let actions = this.board.OnTileClick(index);
 
         if (actions.length > 0) {
-            let actionPacks = [];
 
             let lastAction: BoardAction = actions[0];
             let lastPack:BoardAction[] = [];
+            let actionPacks = [lastPack];
             for (let i = 0; i < actions.length; i++) {
                 const action = actions[i];
                 if(action.Type == lastAction.Type){
                     lastPack.push(action);
                 }
                 else{
-                    actionPacks.push(lastPack);
                     lastPack = [action];
                     lastAction = action;
+                    actionPacks.push(lastPack);
                 }
             }
-            if(!actionPacks.includes(lastPack)){
-                actionPacks.push(lastPack);
-            }
+           
             for(let i = 0; i < actionPacks.length; i++){
                 const pack = actionPacks[i];
                 await Promise.all(pack.map(action => this.PerformAction(action)));
