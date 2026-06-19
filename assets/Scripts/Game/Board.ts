@@ -1,6 +1,7 @@
 import { RandomWithSeedGenerator } from "../Utills/Random";
 import { BoardAction, EBoardActionType } from "./BoardAction";
 import { BoardInfo } from "./BoardInfo";
+import { EGameResultType } from "./EGameResultType";
 import { ETileType } from "./ETileType";
 import TileInfo from "./TileInfo";
 
@@ -15,8 +16,8 @@ export default class Board {
     public get Tiles(): TileInfo[][] {
         return this.boardInfo!.Tiles;
     }
-    public get BoardInfo(): TileInfo[][] {
-        return this.boardInfo!.Tiles;
+    public get BoardInfo():BoardInfo| null{
+        return this.boardInfo;
     }
 
     private actionQueue: BoardAction[] = [];
@@ -54,6 +55,7 @@ export default class Board {
 
     public OnTileClick(index: cc.Vec2): BoardAction[] {
 
+        
         this.actionQueue = [];
         this.needCheckTiles = [index];
         this.checkedTiles = [];
@@ -66,10 +68,12 @@ export default class Board {
             for (const action of this.actionQueue) {
                 if (action.Type == EBoardActionType.TileMatch) {
                     this.boardInfo!.Tiles[action.Position.y][action.Position.x] = null;
+                    this.boardInfo?.CurrentScore += 10;
                 }
             }
             this.ApplyGravity();
             this.FillBoard();
+            this.boardInfo!.Turns++;
         }
         return this.actionQueue;
     }
@@ -130,6 +134,13 @@ export default class Board {
 
     private GetPosString(index: cc.Vec2): string {
         return `${index.x},${index.y}`;
+    }
+
+    public CheckFinish():EGameResultType  {
+        if (!this.boardInfo) return EGameResultType.None;
+        if (this.boardInfo.CurrentScore >= this.boardInfo.TargetScore) return EGameResultType.Win;
+        if (this.boardInfo.Turns >= this.boardInfo.MaxTurns) return EGameResultType.Lose; 
+        return EGameResultType.None;
     }
 }
 

@@ -1,7 +1,9 @@
 import Profile from "../Profile";
 import BoardFabric from "../Utills/BoardFabric";
+import { CustomAction } from "../Utills/CustomActions";
 import Board from "./Board";
 import { BoardAction, EBoardActionType } from "./BoardAction";
+import { EGameResultType } from "./EGameResultType";
 import TileInfo from "./TileInfo";
 import TileView from "./TileView";
 import TypeToTilePair from "./TypeToTilePair";
@@ -18,16 +20,22 @@ export default class BoardDrawer extends cc.Component {
     @property({ type: cc.Node }) private tilesParent: cc.Node | null = null;
 
 
+    
     private _tiles: (TileView | null)[][] = [];
     private board: Board | null = null;
-    start() {
 
-        // if (Profile.Instance.Board) {
-        //     this.board = Profile.Instance.Board;
-        // } else {
-        this.board = BoardFabric.CreateRandomBoardWithSeed(cc.size(8, 8), 200);
-        // }
+    private interactable: boolean = true;
+    private onBoardUpdate: CustomAction = new CustomAction();
 
+    public get AttachedBoard(): Board | null {
+        return this.board;
+    }
+    public get OnBoardUpdate(): CustomAction {
+        return this.onBoardUpdate;
+    }
+
+    public Init(Board:Board){
+        this.board = Board;
         this.DrawBoard();
     }
 
@@ -62,33 +70,35 @@ export default class BoardDrawer extends cc.Component {
     }
     private async OnTileClick(index: cc.Vec2): Promise<void> {
         if (!this.board) return;
+        if (!this.interactable) return;
         let actions = this.board.OnTileClick(index);
-
+        this.interactable = false;
         if (actions.length > 0) {
 
             let lastAction: BoardAction = actions[0];
-            let lastPack:BoardAction[] = [];
+            let lastPack: BoardAction[] = [];
             let actionPacks = [lastPack];
             for (let i = 0; i < actions.length; i++) {
                 const action = actions[i];
-                if(action.Type == lastAction.Type){
+                if (action.Type == lastAction.Type) {
                     lastPack.push(action);
                 }
-                else{
+                else {
                     lastPack = [action];
                     lastAction = action;
                     actionPacks.push(lastPack);
                 }
             }
-           
-            for(let i = 0; i < actionPacks.length; i++){
+
+            for (let i = 0; i < actionPacks.length; i++) {
                 const pack = actionPacks[i];
                 await Promise.all(pack.map(action => this.PerformAction(action)));
             }
         }
-        console.log("Tile clicked at: " + index);
-        console.log("Actions: ", actions);
+        this.interactable = true;
+        this.onBoardUpdate.Invoke();
     }
+
 
     private async PerformAction(boardAction: BoardAction): Promise<void> {
 
@@ -109,20 +119,6 @@ export default class BoardDrawer extends cc.Component {
                 break;
             case EBoardActionType.TileMatch:
                 await this.DestroyTile(pos);
-
-                // switch (boardAction.TileInfo.Type) {
-                //     case ETileType.Tile:
-                //         break;
-                //     case ETileType.Bomb:
-                //         break;
-                //     case ETileType.BIG_BOMB:
-                //         break;
-                //     case ETileType.Fireworks_Horizontal:
-                //         break;
-                //     case ETileType.Fireworks_Vertical:
-                //         break;
-                // }
-
                 break;
             case EBoardActionType.MoveTile:
                 await this.MoveTile(oldPos!, pos);
@@ -161,5 +157,9 @@ export default class BoardDrawer extends cc.Component {
 
     private GetTilePosition(pos: cc.Vec2): cc.Vec2 {
         return new cc.Vec2(pos.x * TILE_SIZE, -pos.y * TILE_SIZE);
+    }
+   
+    public SetInteractable(value:boolean){
+        this.interactable = value;
     }
 }
