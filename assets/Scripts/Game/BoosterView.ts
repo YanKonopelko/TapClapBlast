@@ -1,4 +1,3 @@
-import Profile from "../Profile";
 import { EBoosterType } from "./EBoosterType";
 
 const {ccclass, property} = cc._decorator;
@@ -8,15 +7,17 @@ export default class BoosterView extends cc.Component {
     @property({type: cc.Label}) private counterLabel: cc.Label | null = null;
     @property({type: cc.Sprite}) private iconSprite: cc.Sprite| null = null;
     @property({type: cc.Button}) private button: cc.Button| null = null;
+    @property({type: cc.Animation}) private anim: cc.Animation| null = null;
 
     private readonly IconsPath = "Boosters/";
-
     private onClickAction: Function = () => {};
-
-    private count:number = 5;
+    private type:EBoosterType = EBoosterType.None;
+    public get Type():EBoosterType{
+        return this.type;
+    }
 
     public Init(onClickAction: Function,type:EBoosterType ):void{
-        this.counterLabel?.string = this.count.toString();
+        this.type = type;
         this.button?.node.off(cc.Node.EventType.TOUCH_END, this.OnClick, this);
         this.onClickAction = onClickAction;
         this.button?.node.on(cc.Node.EventType.TOUCH_END, this.OnClick, this);
@@ -36,9 +37,15 @@ export default class BoosterView extends cc.Component {
     private OnClick(){
         if(this.onClickAction)
             this.onClickAction();
-        // this.count --;
-        this.counterLabel?.string = this.count.toString();
-        // Profile.Instance.
+    }
+
+    public Select(){
+        this.anim?.stop();
+        this.anim?.play("BoosterAnimPulse");
+    }
+    public Deselect(){
+        this.anim?.stop();
+        this.anim?.play("BoosterAnimStop");
     }
 
 }

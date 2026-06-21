@@ -9,6 +9,7 @@ import TypeToTilePair from "./TypeToTilePair";
 const { ccclass, property } = cc._decorator;
 const TILE_SIZE = 100;
 const TILE_MOVE_DURATION = 0.2;
+const TILE_FALL_LAYER_DELAY = 0.12;
 
 @ccclass
 export default class BoardDrawer extends cc.Component {
@@ -134,10 +135,60 @@ export default class BoardDrawer extends cc.Component {
 
         for (let i = 0; i < actionPacks.length; i++) {
             const pack = actionPacks[i];
-            await Promise.all(pack.map(action => this.PerformAction(action)));
+            const fallingActions = pack.filter(action => this.IsFallingAction(action));
+            const instantActions = pack.filter(action => !this.IsFallingAction(action));
+
+            if (fallingActions.length > 0) {
+                await Promise.all(instantActions.map(action => this.PerformAction(action)));
+                await this.PerformFallingActions(fallingActions);
+            }
+            else {
+                await Promise.all(instantActions.map(action => this.PerformAction(action)));
+            }
         }
     }
 
+    private async PerformFallingActions(actions: BoardAction[]): Promise<void> {
+        const layers = this.GetFallingActionLayers(actions);
+        await Promise.all(layers.map((layer, index) => this.PerformActionLayerWithDelay(layer, index * TILE_FALL_LAYER_DELAY)));
+    }
+
+    private async PerformActionLayerWithDelay(actions: BoardAction[], delay: number): Promise<void> {
+        await this.Wait(delay);
+        await Promise.all(actions.map(action => this.PerformAction(action)));
+    }
+
+    private GetFallingActionLayers(actions: BoardAction[]): BoardAction[][] {
+        const sortedActions = actions.slice().sort((a, b) => b.Position.y - a.Position.y);
+        const layers: BoardAction[][] = [];
+
+        for (const action of sortedActions) {
+            const lastLayer = layers[layers.length - 1];
+            if (!lastLayer || lastLayer[0].Position.y !== action.Position.y) {
+                layers.push([action]);
+            }
+            else {
+                lastLayer.push(action);
+            }
+        }
+
+        return layers;
+    }
+
+    private IsFallingAction(action: BoardAction): boolean {
+        return (action.Type === EBoardActionType.AddTile && !!action.OldPosition);
+    }
+
+    private async Wait(duration: number): Promise<void> {
+        if (duration <= 0) return;
+
+        await new Promise<void>((resolve) => {
+            cc.tween(this.node)
+                .delay(duration)
+                .call(resolve)
+                .start();
+        });
+    }
 
     private async PerformAction(boardAction: BoardAction): Promise<void> {
 

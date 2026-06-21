@@ -37,7 +37,7 @@ export default class GameScene extends cc.Component {
         // } else {
         // }
         for(let i = 0; i < this.boosters.length;i++){
-            this.boosters[i].Init(()=>{this.SelectBooster(i+1)},i+1);
+            this.boosters[i].Init(()=>{this.SelectBooster(this.boosters[i])},i+1);
         }
         const board = BoardFabric.CreateRandomBoardWithSeed(cc.size(9, 10), 200);
         this.boardDrawer?.Init(board);
@@ -80,12 +80,14 @@ export default class GameScene extends cc.Component {
         window.alert("Поражение!");
         this.boardDrawer?.SetInteractable(false);
     }
-    public SelectBooster(type:EBoosterType){
-        if(type == this.currentBooster){
-            this.currentBooster = EBoosterType.None;
+    public SelectBooster(view:BoosterView){
+        if(view.Type == this.currentBooster){
+            this.ResetBooster();
         }
         else{
-            this.currentBooster = type;
+            this.ResetBooster();
+            this.currentBooster = view.Type;
+            view.Select();
         }
         this.boardDrawer?.UseBooster(this.currentBooster);
     }
@@ -93,6 +95,9 @@ export default class GameScene extends cc.Component {
     private ResetBooster():void{
         this.currentBooster = EBoosterType.None;
         this.boardDrawer?.UseBooster(this.currentBooster);
+        for(let i = 0; i < this.boosters.length; i++){
+            this.boosters[i].Deselect();
+        }
     }
 
 }
