@@ -25,7 +25,7 @@ export default class BoardFabric {
                 Grid: new Grid(greed),
                 Tiles: tiles,
                 GeneratorStepCount: 0,
-                TargetScore: 200,
+                TargetScore: 500,
                 CurrentScore: 0,
                 MaxTurns: 10,
                 Turns: 0
@@ -46,7 +46,7 @@ export default class BoardFabric {
             Grid: new Grid(greed), 
             Tiles: tiles, 
             GeneratorStepCount: 0, 
-            TargetScore: 200, 
+            TargetScore: 500, 
             CurrentScore: 0, 
             MaxTurns: 10, 
             Turns: 0 });

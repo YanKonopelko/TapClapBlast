@@ -2,8 +2,12 @@ import { RandomWithSeedGenerator } from "../Utills/Random";
 import { BoardAction, EBoardActionType } from "./BoardAction";
 import { BoardInfo } from "./BoardInfo";
 import { EGameResultType } from "./EGameResultType";
+import { ETileColor } from "./ETileColor";
 import { ETileType } from "./ETileType";
 import TileInfo from "./TileInfo";
+
+const SUPER_TILE_MATCH_THRESHOLD = 3;
+const BOMB_RADIUS = 1;
 
 export default class Board {
 
@@ -16,7 +20,7 @@ export default class Board {
     public get Tiles(): TileInfo[][] {
         return this.boardInfo!.Tiles;
     }
-    public get BoardInfo():BoardInfo| null{
+    public get BoardInfo(): BoardInfo | null {
         return this.boardInfo;
     }
 
@@ -55,22 +59,56 @@ export default class Board {
 
     public OnTileClick(index: cc.Vec2): BoardAction[] {
 
-        
+
         this.actionQueue = [];
+        const tileInfo = this.GetTileInfo(index);
+        if (!tileInfo) return this.actionQueue;
+
+        if (tileInfo.Type !== ETileType.Tile) {
+            this.ProcessSuperTile(index, tileInfo.Type);
+            return this.actionQueue;
+        }
+
         this.needCheckTiles = [index];
         this.checkedTiles = [];
-        this.actionQueue.push({ TileInfo: this.boardInfo!.Tiles[index.y][index.x], Type: EBoardActionType.TileMatch, Position: index });
+        this.actionQueue.push({ TileInfo: tileInfo, Type: EBoardActionType.TileMatch, Position: index });
         this.CheckTiles();
-        if (this.actionQueue.length == 1 && this.boardInfo!.Tiles[index.y][index.x].Type == ETileType.Tile) {
+        if (this.actionQueue.length == 1) {
             this.actionQueue = [];
         }
         else {
+            let matchCount = 0;
             for (const action of this.actionQueue) {
                 if (action.Type == EBoardActionType.TileMatch) {
                     this.boardInfo!.Tiles[action.Position.y][action.Position.x] = null;
-                    this.boardInfo?.CurrentScore += 10;
+                    this.boardInfo!.CurrentScore += 10;
+                    matchCount++;
                 }
             }
+            if (matchCount > SUPER_TILE_MATCH_THRESHOLD) {
+                let tileInfo = new TileInfo(ETileColor.Red, ETileType.Tile);
+                switch (matchCount) {
+                    case 4: {
+                        tileInfo = new TileInfo(ETileColor.None, this._generator() > 0.5 ? ETileType.Fireworks_Horizontal : ETileType.Fireworks_Vertical);
+                        break;
+                    }
+                    case 5:
+                    case 6: {
+                        tileInfo = new TileInfo(ETileColor.None, ETileType.Bomb);
+                        break
+                    }
+                    default: {
+                        tileInfo = new TileInfo(ETileColor.None, ETileType.BIG_BOMB);
+                        break;
+                    }
+                }
+
+                this.boardInfo!.Tiles[index.y][index.x] = tileInfo;
+                this.actionQueue.push({ TileInfo: tileInfo, Type: EBoardActionType.AddTile, Position: index })
+
+            }
+
+
             this.ApplyGravity();
             this.FillBoard();
             this.boardInfo!.Turns++;
@@ -84,11 +122,11 @@ export default class Board {
             for (let j = 0; j < this.boardInfo.Grid!.Columns; j++) {
                 if (!this.boardInfo.Grid?.Grid[i][j]) continue;
                 if (this.boardInfo.Tiles[i][j]) continue;
-                for(let k = i; k >= 0; k --){
-                    if (this.boardInfo.Tiles[k][j]){
+                for (let k = i; k >= 0; k--) {
+                    if (this.boardInfo.Tiles[k][j]) {
                         this.boardInfo.Tiles[i][j] = this.boardInfo.Tiles[k][j];
                         this.boardInfo.Tiles[k][j] = null;
-                        this.actionQueue.push({ TileInfo: this.boardInfo.Tiles[i][j], Type: EBoardActionType.MoveTile, Position: new cc.Vec2(j, i),OldPosition:new cc.Vec2(j, k) });
+                        this.actionQueue.push({ TileInfo: this.boardInfo.Tiles[i][j], Type: EBoardActionType.MoveTile, Position: new cc.Vec2(j, i), OldPosition: new cc.Vec2(j, k) });
                         break;
                     }
                 }
@@ -136,11 +174,110 @@ export default class Board {
         return `${index.x},${index.y}`;
     }
 
-    public CheckFinish():EGameResultType  {
+    public CheckFinish(): EGameResultType {
         if (!this.boardInfo) return EGameResultType.None;
         if (this.boardInfo.CurrentScore >= this.boardInfo.TargetScore) return EGameResultType.Win;
-        if (this.boardInfo.Turns >= this.boardInfo.MaxTurns) return EGameResultType.Lose; 
+        if (this.boardInfo.Turns >= this.boardInfo.MaxTurns) return EGameResultType.Lose;
         return EGameResultType.None;
     }
-}
 
+    private ProcessSuperTile(index: cc.Vec2, tileType: ETileType): void {
+        let affectedTiles: cc.Vec2[] = [];
+
+        switch (tileType) {
+            case ETileType.Fireworks_Horizontal:
+                affectedTiles = this.GetRowTiles(index.y);
+                break;
+            case ETileType.Fireworks_Vertical:
+                affectedTiles = this.GetColumnTiles(index.x);
+                break;
+            case ETileType.Bomb:
+                affectedTiles = this.GetRadiusTiles(index, BOMB_RADIUS);
+                break;
+            case ETileType.BIG_BOMB:
+                affectedTiles = this.GetAllBoardTiles();
+                break;
+            default:
+                return;
+        }
+
+        this.MatchTiles(affectedTiles);
+        this.ApplyGravity();
+        this.FillBoard();
+        this.boardInfo!.Turns++;
+    }
+
+    private MatchTiles(tiles: cc.Vec2[]): void {
+        const matchedTiles: string[] = [];
+
+        for (const tile of tiles) {
+            const tileInfo = this.GetTileInfo(tile);
+            const posKey = this.GetPosString(tile);
+            if (!tileInfo || matchedTiles.includes(posKey)) continue;
+
+            matchedTiles.push(posKey);
+            this.boardInfo!.Tiles[tile.y][tile.x] = null;
+            this.boardInfo!.CurrentScore += 10;
+            this.actionQueue.push({ TileInfo: tileInfo, Type: EBoardActionType.TileMatch, Position: tile });
+        }
+    }
+
+    private GetRowTiles(row: number): cc.Vec2[] {
+        const tiles: cc.Vec2[] = [];
+        if (!this.boardInfo) return tiles;
+
+        for (let x = 0; x < this.boardInfo.Grid!.Columns; x++) {
+            const pos = new cc.Vec2(x, row);
+            if (this.IsPlayableCell(pos)) tiles.push(pos);
+        }
+
+        return tiles;
+    }
+
+    private GetColumnTiles(column: number): cc.Vec2[] {
+        const tiles: cc.Vec2[] = [];
+        if (!this.boardInfo) return tiles;
+
+        for (let y = 0; y < this.boardInfo.Grid!.Rows; y++) {
+            const pos = new cc.Vec2(column, y);
+            if (this.IsPlayableCell(pos)) tiles.push(pos);
+        }
+
+        return tiles;
+    }
+
+    private GetRadiusTiles(center: cc.Vec2, radius: number): cc.Vec2[] {
+        const tiles: cc.Vec2[] = [];
+        if (!this.boardInfo) return tiles;
+
+        for (let y = center.y - radius; y <= center.y + radius; y++) {
+            for (let x = center.x - radius; x <= center.x + radius; x++) {
+                const pos = new cc.Vec2(x, y);
+                if (this.IsPlayableCell(pos)) tiles.push(pos);
+            }
+        }
+
+        return tiles;
+    }
+
+    private GetAllBoardTiles(): cc.Vec2[] {
+        const tiles: cc.Vec2[] = [];
+        if (!this.boardInfo) return tiles;
+
+        for (let y = 0; y < this.boardInfo.Grid!.Rows; y++) {
+            for (let x = 0; x < this.boardInfo.Grid!.Columns; x++) {
+                const pos = new cc.Vec2(x, y);
+                if (this.IsPlayableCell(pos)) tiles.push(pos);
+            }
+        }
+
+        return tiles;
+    }
+
+    private IsPlayableCell(index: cc.Vec2): boolean {
+        if (!this.boardInfo?.Grid) return false;
+        if (index.y < 0 || index.y >= this.boardInfo.Grid.Rows) return false;
+        if (index.x < 0 || index.x >= this.boardInfo.Grid.Columns) return false;
+        return this.boardInfo.Grid.Grid[index.y][index.x];
+    }
+}
