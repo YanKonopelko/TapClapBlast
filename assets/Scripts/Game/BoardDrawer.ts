@@ -1,4 +1,5 @@
 import { CustomAction } from "../Utills/CustomActions";
+import { TimeUtils } from "../Utills/TimeUtils";
 import Board from "./Board";
 import { BoardAction, EBoardActionType } from "./BoardAction";
 import { EBoosterType } from "./EBoosterType";
@@ -154,7 +155,7 @@ export default class BoardDrawer extends cc.Component {
     }
 
     private async PerformActionLayerWithDelay(actions: BoardAction[], delay: number): Promise<void> {
-        await this.Wait(delay);
+        await TimeUtils.TimeoutSeconds(delay);
         await Promise.all(actions.map(action => this.PerformAction(action)));
     }
 
@@ -179,16 +180,6 @@ export default class BoardDrawer extends cc.Component {
         return (action.Type === EBoardActionType.AddTile && !!action.OldPosition);
     }
 
-    private async Wait(duration: number): Promise<void> {
-        if (duration <= 0) return;
-
-        await new Promise<void>((resolve) => {
-            cc.tween(this.node)
-                .delay(duration)
-                .call(resolve)
-                .start();
-        });
-    }
 
     private async PerformAction(boardAction: BoardAction): Promise<void> {
 
