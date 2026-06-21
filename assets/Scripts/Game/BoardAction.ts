@@ -4,6 +4,7 @@ export enum EBoardActionType {
     AddTile,
     TileMatch,
     MoveTile,
+    SwapTile,
 }
 
 export type BoardAction =

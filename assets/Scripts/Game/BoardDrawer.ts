@@ -1,9 +1,7 @@
-import Profile from "../Profile";
-import BoardFabric from "../Utills/BoardFabric";
 import { CustomAction } from "../Utills/CustomActions";
 import Board from "./Board";
 import { BoardAction, EBoardActionType } from "./BoardAction";
-import { EGameResultType } from "./EGameResultType";
+import { EBoosterType } from "./EBoosterType";
 import TileInfo from "./TileInfo";
 import TileView from "./TileView";
 import TypeToTilePair from "./TypeToTilePair";
@@ -26,12 +24,17 @@ export default class BoardDrawer extends cc.Component {
 
     private interactable: boolean = true;
     private onBoardUpdate: CustomAction = new CustomAction();
-
+    private onBoosterUse: CustomAction = new CustomAction();
+    private activeBooster:EBoosterType = EBoosterType.None;
+    private selectedBoosterTile: cc.Vec2 | null = null;
     public get AttachedBoard(): Board | null {
         return this.board;
     }
     public get OnBoardUpdate(): CustomAction {
         return this.onBoardUpdate;
+    }
+    public get OnBoosterUse(): CustomAction {
+        return this.onBoosterUse;
     }
 
     public Init(Board:Board){
@@ -71,32 +74,68 @@ export default class BoardDrawer extends cc.Component {
     private async OnTileClick(index: cc.Vec2): Promise<void> {
         if (!this.board) return;
         if (!this.interactable) return;
+
+        if(this.activeBooster){
+            await this.OnBoosterTileClick(index);
+            return;
+        }
+
         let actions = this.board.OnTileClick(index);
         this.interactable = false;
         if (actions.length > 0) {
-
-            let lastAction: BoardAction = actions[0];
-            let lastPack: BoardAction[] = [];
-            let actionPacks = [lastPack];
-            for (let i = 0; i < actions.length; i++) {
-                const action = actions[i];
-                if (action.Type == lastAction.Type) {
-                    lastPack.push(action);
-                }
-                else {
-                    lastPack = [action];
-                    lastAction = action;
-                    actionPacks.push(lastPack);
-                }
-            }
-
-            for (let i = 0; i < actionPacks.length; i++) {
-                const pack = actionPacks[i];
-                await Promise.all(pack.map(action => this.PerformAction(action)));
-            }
+            await this.PerformActions(actions);
         }
         this.interactable = true;
         this.onBoardUpdate.Invoke();
+    }
+
+    private async OnBoosterTileClick(index: cc.Vec2): Promise<void> {
+        if (!this.board) return;
+
+        if (this.activeBooster === EBoosterType.Teleport && !this.selectedBoosterTile) {
+            this.selectedBoosterTile = new cc.Vec2(index.x, index.y);
+            return;
+        }
+
+        if (this.activeBooster === EBoosterType.Teleport && this.selectedBoosterTile && this.selectedBoosterTile.x === index.x && this.selectedBoosterTile.y === index.y) {
+            this.selectedBoosterTile = null;
+            return;
+        }
+
+        const firstTile = this.selectedBoosterTile ?? index;
+        const actions = this.board.UseBooster(this.activeBooster, firstTile, this.activeBooster === EBoosterType.Teleport ? index : null);
+        this.selectedBoosterTile = null;
+        this.activeBooster = EBoosterType.None;
+
+        this.interactable = false;
+        if (actions.length > 0) {
+            await this.PerformActions(actions);
+        }
+        this.interactable = true;
+        this.onBoosterUse.Invoke();
+        this.onBoardUpdate.Invoke();
+    }
+
+    private async PerformActions(actions: BoardAction[]): Promise<void> {
+        let lastAction: BoardAction = actions[0];
+        let lastPack: BoardAction[] = [];
+        let actionPacks = [lastPack];
+        for (let i = 0; i < actions.length; i++) {
+            const action = actions[i];
+            if (action.Type == lastAction.Type) {
+                lastPack.push(action);
+            }
+            else {
+                lastPack = [action];
+                lastAction = action;
+                actionPacks.push(lastPack);
+            }
+        }
+
+        for (let i = 0; i < actionPacks.length; i++) {
+            const pack = actionPacks[i];
+            await Promise.all(pack.map(action => this.PerformAction(action)));
+        }
     }
 
 
@@ -122,6 +161,9 @@ export default class BoardDrawer extends cc.Component {
                 break;
             case EBoardActionType.MoveTile:
                 await this.MoveTile(oldPos!, pos);
+                break;
+            case EBoardActionType.SwapTile:
+                await this.SwapTiles(pos, oldPos!);
                 break;
         }
     }
@@ -155,11 +197,44 @@ export default class BoardDrawer extends cc.Component {
         });
     }
 
+    private async SwapTiles(firstPos: cc.Vec2, secondPos: cc.Vec2): Promise<void> {
+        const firstTile = this._tiles[firstPos.y]?.[firstPos.x];
+        const secondTile = this._tiles[secondPos.y]?.[secondPos.x];
+        if (!firstTile || !secondTile) return;
+
+        const firstTarget = this.GetTilePosition(secondPos);
+        const secondTarget = this.GetTilePosition(firstPos);
+
+        await Promise.all([
+            this.TweenTileTo(firstTile.node, firstTarget),
+            this.TweenTileTo(secondTile.node, secondTarget),
+        ]);
+
+        this._tiles[firstPos.y][firstPos.x] = secondTile;
+        this._tiles[secondPos.y][secondPos.x] = firstTile;
+        firstTile.Init(() => { this.OnTileClick(secondPos); });
+        secondTile.Init(() => { this.OnTileClick(firstPos); });
+    }
+
+    private async TweenTileTo(tileNode: cc.Node, targetPosition: cc.Vec2): Promise<void> {
+        await new Promise<void>((resolve) => {
+            cc.tween(tileNode)
+                .to(TILE_MOVE_DURATION, { x: targetPosition.x, y: targetPosition.y }, { easing: "quadIn" })
+                .call(resolve)
+                .start();
+        });
+    }
+
     private GetTilePosition(pos: cc.Vec2): cc.Vec2 {
         return new cc.Vec2(pos.x * TILE_SIZE, -pos.y * TILE_SIZE);
     }
    
-    public SetInteractable(value:boolean){
+    public SetInteractable(value:boolean):void{
         this.interactable = value;
+    }
+
+    public UseBooster(booster:EBoosterType):void{
+        this.activeBooster = booster;
+        this.selectedBoosterTile = null;
     }
 }

@@ -1,6 +1,7 @@
 import { RandomWithSeedGenerator } from "../Utills/Random";
 import { BoardAction, EBoardActionType } from "./BoardAction";
 import { BoardInfo } from "./BoardInfo";
+import { EBoosterType } from "./EBoosterType";
 import { EGameResultType } from "./EGameResultType";
 import { ETileColor } from "./ETileColor";
 import { ETileType } from "./ETileType";
@@ -279,5 +280,35 @@ export default class Board {
         if (index.y < 0 || index.y >= this.boardInfo.Grid.Rows) return false;
         if (index.x < 0 || index.x >= this.boardInfo.Grid.Columns) return false;
         return this.boardInfo.Grid.Grid[index.y][index.x];
+    }
+
+    public UseBooster(booster: EBoosterType, pos_1: cc.Vec2, pos_2: cc.Vec2 | null = null): BoardAction[] {
+        this.actionQueue = [];
+
+        switch (booster) {
+            case EBoosterType.None: {
+                break;
+            }
+            case EBoosterType.Teleport: {
+                if (!pos_2) return this.actionQueue;
+                const firstTile = this.GetTileInfo(pos_1);
+                const secondTile = this.GetTileInfo(pos_2);
+                if (!firstTile || !secondTile) break;
+
+                this.boardInfo!.Tiles[pos_1.y][pos_1.x] = secondTile;
+                this.boardInfo!.Tiles[pos_2.y][pos_2.x] = firstTile;
+                this.actionQueue.push({ TileInfo: firstTile, Type: EBoardActionType.SwapTile, Position: pos_1, OldPosition: pos_2 });
+                break;
+            }
+            case EBoosterType.Bomb: {
+                const affectedTiles = this.GetRadiusTiles(pos_1, BOMB_RADIUS);
+                this.MatchTiles(affectedTiles);
+                this.ApplyGravity();
+                this.FillBoard();
+                break;
+            }
+        }
+
+        return this.actionQueue;
     }
 }
