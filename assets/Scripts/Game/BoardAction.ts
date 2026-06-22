@@ -1,4 +1,4 @@
-import TileInfo from "./TileInfo";
+import { TileInfo } from "./TileInfo";
 
 export enum EBoardActionType {
     AddTile,

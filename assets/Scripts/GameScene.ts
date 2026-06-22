@@ -5,10 +5,12 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/2.4/manual/en/scripting/life-cycle-callbacks.html
 
+import Board from "./Game/Board";
 import BoardDrawer from "./Game/BoardDrawer";
 import BoosterView from "./Game/BoosterView";
 import { EBoosterType } from "./Game/EBoosterType";
 import { EGameResultType } from "./Game/EGameResultType";
+import Profile from "./Profile";
 import BoardFabric from "./Utills/BoardFabric";
 
 const { ccclass, property } = cc._decorator;
@@ -32,14 +34,16 @@ export default class GameScene extends cc.Component {
     private currentBooster:EBoosterType = EBoosterType.None;
 
     start() {
-        // if (Profile.Instance.Board) {
-        //     this.board = Profile.Instance.Board;
-        // } else {
-        // }
+        let board:Board = BoardFabric.CreateRandomBoardWithSeed(cc.size(9, 10), 200);
+        if (Profile.Instance.Board) {
+            board = Profile.Instance.Board;
+        } else {
+            Profile.Instance.Board = board;
+            Profile.Instance.Save();
+        }
         for(let i = 0; i < this.boosters.length;i++){
             this.boosters[i].Init(()=>{this.SelectBooster(this.boosters[i])},i+1);
         }
-        const board = BoardFabric.CreateRandomBoardWithSeed(cc.size(9, 10), 200);
         this.boardDrawer?.Init(board);
         this.boardDrawer?.OnBoardUpdate.Subscribe(this.UpdateVisual, this);
         this.boardDrawer?.OnBoosterUse.Subscribe(this.ResetBooster, this);
@@ -47,8 +51,10 @@ export default class GameScene extends cc.Component {
     }
 
     private UpdateVisual() {
-        this.scoreLabel?.string = `Очки:\n${this.boardDrawer?.AttachedBoard?.BoardInfo?.CurrentScore}/${this.boardDrawer?.AttachedBoard?.BoardInfo?.TargetScore}`;
-        this.turnCountLabel?.string = `${this.boardDrawer?.AttachedBoard?.BoardInfo?.MaxTurns-this.boardDrawer?.AttachedBoard?.BoardInfo?.Turns}`;
+        Profile.Instance.Board = this.boardDrawer?.AttachedBoard;
+        Profile.Instance.Save();
+        this.scoreLabel?.string = `Очки:\n${this.boardDrawer?.AttachedBoard?.CurrentScore}/${this.boardDrawer?.AttachedBoard?.TargetScore}`;
+        this.turnCountLabel?.string = `${this.boardDrawer?.AttachedBoard?.MaxTurns-this.boardDrawer?.AttachedBoard?.Turns}`;
         this.CheckFinish();
     }
     private CheckFinish(): void {
@@ -73,11 +79,15 @@ export default class GameScene extends cc.Component {
     private Win(): void {
         this.isGameFinished = true;
         window.alert("Победа!");
+        Profile.Instance.Board = null;
+        Profile.Instance.Save();
         this.boardDrawer?.SetInteractable(false);
     }
     private Lose(): void {
         this.isGameFinished = true;
         window.alert("Поражение!");
+        Profile.Instance.Board = null;
+        Profile.Instance.Save();
         this.boardDrawer?.SetInteractable(false);
     }
     public SelectBooster(view:BoosterView){

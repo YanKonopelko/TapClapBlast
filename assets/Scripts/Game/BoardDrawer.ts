@@ -3,7 +3,7 @@ import { TimeUtils } from "../Utills/TimeUtils";
 import Board from "./Board";
 import { BoardAction, EBoardActionType } from "./BoardAction";
 import { EBoosterType } from "./EBoosterType";
-import TileInfo from "./TileInfo";
+import { TileInfo } from "./TileInfo";
 import TileView from "./TileView";
 import TypeToTilePair from "./TypeToTilePair";
 
@@ -60,11 +60,12 @@ export default class BoardDrawer extends cc.Component {
         }
     }
 
-    private CreateTile(tileInfo: TileInfo, index: cc.Vec2): TileView | null {
-        if (tileInfo.Type === 0) return null;
-        const prefabs = this.tilePrefabs.find(p => p.Type === tileInfo.Type);
+    private CreateTile(tileInfo: TileInfo | null, index: cc.Vec2): TileView | null {
+        if (!tileInfo) return null;
+        if (tileInfo.type === 0) return null;
+        const prefabs = this.tilePrefabs.find(p => p.Type === tileInfo.type);
         if (!prefabs) return null;
-        const prefab = prefabs.GetPrefabByColor(tileInfo.Color);
+        const prefab = prefabs.GetPrefabByColor(tileInfo.color);
         if (!prefab) return null;
         const tileNode = cc.instantiate(prefab);
         let tileView = tileNode.getComponent(TileView);

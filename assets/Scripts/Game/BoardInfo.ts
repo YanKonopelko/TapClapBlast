@@ -1,11 +1,10 @@
-import Grid from "./Grid";
-import TileInfo from "./TileInfo";
+import { TileInfo } from "./TileInfo";
 
 export type BoardInfo = {
     Seed: number;
     GeneratorStepCount: number;
-    Tiles: TileInfo[][];
-    Grid: Grid | null;
+    Tiles: (TileInfo | null)[][];
+    Grid: boolean[][];
     TargetScore: number;
     CurrentScore: number;
     MaxTurns: number;

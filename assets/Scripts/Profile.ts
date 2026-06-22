@@ -1,11 +1,13 @@
 import Board from "./Game/Board";
 import { BoardInfo } from "./Game/BoardInfo";
+import { EBoosterType } from "./Game/EBoosterType";
 import BoardFabric from "./Utills/BoardFabric";
 
 
 export default class Profile {
 
     private _board:Board|null = null;
+    private _boosters: Map<EBoosterType, number> = new Map<EBoosterType, number>();
 
     private static _instance: Profile | null = null;
 
@@ -32,6 +34,9 @@ export default class Profile {
                 let boardInfo = profile.board as BoardInfo;
                 this._board = BoardFabric.CreateBoardFromConfig(boardInfo);
             }
+            if(profile.boosters){
+                this._boosters = profile.boosters;
+            }
         }
     }
 
@@ -42,6 +47,7 @@ export default class Profile {
     private GetString(): string {
         const jsonObject = new Object() as any;
         jsonObject.board = this._board?.BoardInfo;
+        jsonObject.boosters = this._boosters;
         return JSON.stringify(jsonObject);
     }
 

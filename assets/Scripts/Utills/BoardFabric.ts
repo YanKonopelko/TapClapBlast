@@ -1,28 +1,34 @@
 import Board from "../Game/Board";
 import { BoardInfo } from "../Game/BoardInfo";
-import Grid from "../Game/Grid";
-import TileInfo from "../Game/TileInfo";
+import { TileInfo } from "../Game/TileInfo";
 
 export default class BoardFabric {
 
     public static CreateBoardFromConfig(BoardInfo: BoardInfo): Board {
-        let board: Board = new Board(BoardInfo);
+        let board: Board = new Board(this.NormalizeBoardInfo(BoardInfo));
         return board;
     }
+
+    private static NormalizeBoardInfo(boardInfo: BoardInfo): BoardInfo {
+        const serializedGrid = boardInfo.Grid as any;
+        boardInfo.Grid = Array.isArray(serializedGrid) ? serializedGrid : serializedGrid?._grid ?? [];
+        return boardInfo;
+    }
+
     public static CreateRandomBoard(size: cc.Size): Board {
-        var greed: boolean[][] = [];
-        var tiles: TileInfo[][] = [];
+        var grid: boolean[][] = [];
+        var tiles: (TileInfo | null)[][] = [];
         for (let i = 0; i < size.height; i++) {
-            greed[i] = [];
+            grid[i] = [];
             for (let j = 0; j < size.width; j++) {
-                greed[i][j] = true;
+                grid[i][j] = true;
             }
             tiles[i] = [];
         }
         let board: Board = new Board(
             {
                 Seed: Math.random(),
-                Grid: new Grid(greed),
+                Grid: grid,
                 Tiles: tiles,
                 GeneratorStepCount: 0,
                 TargetScore: 500,
@@ -33,17 +39,17 @@ export default class BoardFabric {
         return board;
     }
     public static CreateRandomBoardWithSeed(size: cc.Size, seed: number): Board {
-        var greed: boolean[][] = [];
-        var tiles: TileInfo[][] = [];
+        var grid: boolean[][] = [];
+        var tiles: (TileInfo | null)[][] = [];
         for (let i = 0; i < size.height; i++) {
-            greed[i] = [];
+            grid[i] = [];
             for (let j = 0; j < size.width; j++) {
-                greed[i][j] = true;
+                grid[i][j] = true;
             }
             tiles[i] = [];
         }
         let board: Board = new Board({ Seed: seed, 
-            Grid: new Grid(greed), 
+            Grid: grid, 
             Tiles: tiles, 
             GeneratorStepCount: 0, 
             TargetScore: 500, 
