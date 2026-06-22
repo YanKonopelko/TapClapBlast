@@ -1,6 +1,6 @@
 import ColorToPrefabPair from "./ColorToPrefabPair";
-import { ETileColor } from "./ETileColor";
-import { ETileType } from "./ETileType";
+import { ETileColor } from "../Board/ETileColor";
+import { ETileType } from "../Board/ETileType";
 
 const { ccclass, property } = cc._decorator;
 

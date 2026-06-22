@@ -1,10 +1,10 @@
-import { CustomAction, CustomActionWithParam } from "../Utills/CustomActions";
-import { TimeUtils } from "../Utills/TimeUtils";
-import Board from "./Board";
-import { BoardAction, EBoardActionType } from "./BoardAction";
-import { EBoosterType } from "./EBoosterType";
-import { TileInfo } from "./TileInfo";
-import TileView from "./TileView";
+import { CustomAction, CustomActionWithParam } from "../../Utills/CustomActions";
+import { TimeUtils } from "../../Utills/TimeUtils";
+import Board from "../Board/Board";
+import { BoardAction, EBoardActionType } from "../Board/BoardAction";
+import { EBoosterType } from "../EBoosterType";
+import { TileInfo } from "../Board/TileInfo";
+import TileView from "../Board/TileView";
 import TypeToTilePair from "./TypeToTilePair";
 
 const { ccclass, property } = cc._decorator;

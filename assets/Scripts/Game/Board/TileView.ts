@@ -1,4 +1,4 @@
-import { TimeUtils } from "../Utills/TimeUtils";
+import { TimeUtils } from "../../Utills/TimeUtils";
 
 const {ccclass, property} = cc._decorator;
 

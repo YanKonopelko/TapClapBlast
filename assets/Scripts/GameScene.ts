@@ -5,11 +5,11 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/2.4/manual/en/scripting/life-cycle-callbacks.html
 
-import Board from "./Game/Board";
-import BoardDrawer from "./Game/BoardDrawer";
-import BoosterView from "./Game/BoosterView";
+import Board from "./Game/Board/Board";
+import BoardDrawer from "./Game/UI/BoardDrawer";
 import { EBoosterType } from "./Game/EBoosterType";
 import { EGameResultType } from "./Game/EGameResultType";
+import BoosterView from "./Game/UI/BoosterView";
 import Profile from "./Profile";
 import BoardFabric from "./Utills/BoardFabric";
 

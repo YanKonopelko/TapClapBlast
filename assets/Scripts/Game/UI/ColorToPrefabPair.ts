@@ -1,4 +1,4 @@
-import { ETileColor } from "./ETileColor";
+import { ETileColor } from "../Board/ETileColor";
 
 const { ccclass, property } = cc._decorator;
 

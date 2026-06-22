@@ -1,4 +1,4 @@
-import { EBoosterType } from "./EBoosterType";
+import { EBoosterType } from "../EBoosterType";
 
 const {ccclass, property} = cc._decorator;
 

@@ -1,4 +1,4 @@
-import Board from "../Game/Board";
+import Board from "../Game/Board/Board";
 import { EBoosterType } from "../Game/EBoosterType";
 import GameScene from "../GameScene";
 import Profile from "../Profile";

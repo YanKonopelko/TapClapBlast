@@ -1,8 +1,8 @@
-import { RandomWithSeedGenerator } from "../Utills/Random";
+import { RandomWithSeedGenerator } from "../../Utills/Random";
 import { BoardAction, EBoardActionType } from "./BoardAction";
 import { BoardInfo } from "./BoardInfo";
-import { EBoosterType } from "./EBoosterType";
-import { EGameResultType } from "./EGameResultType";
+import { EBoosterType } from "../EBoosterType";
+import { EGameResultType } from "../EGameResultType";
 import { ETileColor } from "./ETileColor";
 import { ETileType } from "./ETileType";
 import { TileInfo } from "./TileInfo";

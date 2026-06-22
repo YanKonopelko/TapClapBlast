@@ -1,5 +1,5 @@
-import Board from "./Game/Board";
-import { BoardInfo } from "./Game/BoardInfo";
+import Board from "./Game/Board/Board";
+import { BoardInfo } from "./Game/Board/BoardInfo";
 import { EBoosterType } from "./Game/EBoosterType";
 import BoardFabric from "./Utills/BoardFabric";
 import { CustomAction } from "./Utills/CustomActions";
