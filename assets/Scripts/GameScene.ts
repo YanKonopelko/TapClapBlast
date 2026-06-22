@@ -31,23 +31,28 @@ export default class GameScene extends cc.Component {
     boosters: BoosterView[] = [];
 
     private isGameFinished: boolean = false;
-    private currentBooster:EBoosterType = EBoosterType.None;
+    private currentBooster: EBoosterType = EBoosterType.None;
 
     start() {
-        let board:Board = BoardFabric.CreateRandomBoardWithSeed(cc.size(9, 10), 200);
+        this.Load();
+        this.boardDrawer?.OnBoardUpdate.Subscribe(this.UpdateVisual, this);
+        this.boardDrawer?.OnBoosterUse.Subscribe(this.OnBoosterUse, this);
+        Profile.Instance.OnBoostersCountChange.Subscribe(this.UpdateBoostersVisual, this);
+
+    }
+
+    public Load() {
+        let board: Board = BoardFabric.CreateRandomBoardWithSeed(cc.size(9, 10), 200);
         if (Profile.Instance.Board) {
             board = Profile.Instance.Board;
         } else {
             Profile.Instance.Board = board;
             Profile.Instance.Save();
         }
-        for(let i = 0; i < this.boosters.length;i++){
-            this.boosters[i].Init(()=>{this.SelectBooster(this.boosters[i])},i+1);
+        for (let i = 0; i < this.boosters.length; i++) {
+            this.boosters[i].Init(() => { this.SelectBooster(this.boosters[i]) }, i + 1);
         }
         this.boardDrawer?.Init(board);
-        this.boardDrawer?.OnBoardUpdate.Subscribe(this.UpdateVisual, this);
-        this.boardDrawer?.OnBoosterUse.Subscribe(this.OnBoosterUse, this);
-        Profile.Instance.OnBoostersCountChange.Subscribe(this.UpdateBoostersVisual, this);
         this.UpdateBoostersVisual();
         this.UpdateVisual();
     }
@@ -56,7 +61,7 @@ export default class GameScene extends cc.Component {
         Profile.Instance.Board = this.boardDrawer?.AttachedBoard;
         Profile.Instance.Save();
         this.scoreLabel?.string = `Очки:\n${this.boardDrawer?.AttachedBoard?.CurrentScore}/${this.boardDrawer?.AttachedBoard?.TargetScore}`;
-        this.turnCountLabel?.string = `${this.boardDrawer?.AttachedBoard?.MaxTurns-this.boardDrawer?.AttachedBoard?.Turns}`;
+        this.turnCountLabel?.string = `${this.boardDrawer?.AttachedBoard?.MaxTurns - this.boardDrawer?.AttachedBoard?.Turns}`;
         this.CheckFinish();
     }
     private CheckFinish(): void {
@@ -92,11 +97,11 @@ export default class GameScene extends cc.Component {
         Profile.Instance.Save();
         this.boardDrawer?.SetInteractable(false);
     }
-    public SelectBooster(view:BoosterView){
-        if(view.Type == this.currentBooster){
+    public SelectBooster(view: BoosterView) {
+        if (view.Type == this.currentBooster) {
             this.ResetBooster();
         }
-        else{
+        else {
             if (Profile.Instance.GetBoosterCount(view.Type) <= 0) return;
             this.ResetBooster();
             this.currentBooster = view.Type;
@@ -105,23 +110,23 @@ export default class GameScene extends cc.Component {
         this.boardDrawer?.UseBooster(this.currentBooster);
     }
 
-    private OnBoosterUse(booster:EBoosterType):void{
+    private OnBoosterUse(booster: EBoosterType): void {
         if (booster !== EBoosterType.None && Profile.Instance.SpendBooster(booster)) {
             Profile.Instance.Save();
         }
         this.ResetBooster();
     }
 
-    private ResetBooster():void{
+    private ResetBooster(): void {
         this.currentBooster = EBoosterType.None;
         this.boardDrawer?.UseBooster(this.currentBooster);
-        for(let i = 0; i < this.boosters.length; i++){
+        for (let i = 0; i < this.boosters.length; i++) {
             this.boosters[i].Deselect();
         }
     }
 
-    private UpdateBoostersVisual():void{
-        for(let i = 0; i < this.boosters.length; i++){
+    private UpdateBoostersVisual(): void {
+        for (let i = 0; i < this.boosters.length; i++) {
             this.boosters[i].SetCount(Profile.Instance.GetBoosterCount(this.boosters[i].Type));
         }
     }
@@ -130,6 +135,10 @@ export default class GameScene extends cc.Component {
         this.boardDrawer?.OnBoardUpdate.UnSubscribe(this.UpdateVisual, this);
         this.boardDrawer?.OnBoosterUse.UnSubscribe(this.OnBoosterUse, this);
         Profile.Instance.OnBoostersCountChange.UnSubscribe(this.UpdateBoostersVisual, this);
+    }
+
+    public SetBoard(board: Board) {
+        Profile.Instance.Board
     }
 
 }

@@ -47,6 +47,7 @@ export default class BoardDrawer extends cc.Component {
     public DrawBoard(): void {
         if (!this.board) return;
         this._tiles = [];
+        this.tilesParent?.destroyAllChildren();
         for (let i = 0; i < this.board.Tiles.length; i++) {
             this._tiles[i] = [];
             for (let j = 0; j < this.board.Tiles[i].length; j++) {

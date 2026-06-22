@@ -25,9 +25,10 @@ export default class BoardFabric {
             }
             tiles[i] = [];
         }
+        let seed = Math.random()*100;
         let board: Board = new Board(
             {
-                Seed: Math.random(),
+                Seed: seed,
                 Grid: grid,
                 Tiles: tiles,
                 GeneratorStepCount: 0,
