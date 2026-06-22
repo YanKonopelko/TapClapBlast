@@ -1,4 +1,4 @@
-import { CustomAction } from "../Utills/CustomActions";
+import { CustomAction, CustomActionWithParam } from "../Utills/CustomActions";
 import { TimeUtils } from "../Utills/TimeUtils";
 import Board from "./Board";
 import { BoardAction, EBoardActionType } from "./BoardAction";
@@ -26,7 +26,7 @@ export default class BoardDrawer extends cc.Component {
 
     private interactable: boolean = true;
     private onBoardUpdate: CustomAction = new CustomAction();
-    private onBoosterUse: CustomAction = new CustomAction();
+    private onBoosterUse: CustomActionWithParam<EBoosterType> = new CustomActionWithParam<EBoosterType>();
     private activeBooster:EBoosterType = EBoosterType.None;
     private selectedBoosterTile: cc.Vec2 | null = null;
     public get AttachedBoard(): Board | null {
@@ -35,7 +35,7 @@ export default class BoardDrawer extends cc.Component {
     public get OnBoardUpdate(): CustomAction {
         return this.onBoardUpdate;
     }
-    public get OnBoosterUse(): CustomAction {
+    public get OnBoosterUse(): CustomActionWithParam<EBoosterType> {
         return this.onBoosterUse;
     }
 
@@ -105,17 +105,18 @@ export default class BoardDrawer extends cc.Component {
             return;
         }
 
+        const usedBooster = this.activeBooster;
         const firstTile = this.selectedBoosterTile ?? index;
-        const actions = this.board.UseBooster(this.activeBooster, firstTile, this.activeBooster === EBoosterType.Teleport ? index : null);
+        const actions = this.board.UseBooster(usedBooster, firstTile, usedBooster === EBoosterType.Teleport ? index : null);
         this.selectedBoosterTile = null;
         this.activeBooster = EBoosterType.None;
 
         this.interactable = false;
         if (actions.length > 0) {
             await this.PerformActions(actions);
+            this.onBoosterUse.Invoke(usedBooster);
         }
         this.interactable = true;
-        this.onBoosterUse.Invoke();
         this.onBoardUpdate.Invoke();
     }
 

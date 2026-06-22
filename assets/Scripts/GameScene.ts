@@ -46,7 +46,9 @@ export default class GameScene extends cc.Component {
         }
         this.boardDrawer?.Init(board);
         this.boardDrawer?.OnBoardUpdate.Subscribe(this.UpdateVisual, this);
-        this.boardDrawer?.OnBoosterUse.Subscribe(this.ResetBooster, this);
+        this.boardDrawer?.OnBoosterUse.Subscribe(this.OnBoosterUse, this);
+        Profile.Instance.OnBoostersCountChange.Subscribe(this.UpdateBoostersVisual, this);
+        this.UpdateBoostersVisual();
         this.UpdateVisual();
     }
 
@@ -95,11 +97,19 @@ export default class GameScene extends cc.Component {
             this.ResetBooster();
         }
         else{
+            if (Profile.Instance.GetBoosterCount(view.Type) <= 0) return;
             this.ResetBooster();
             this.currentBooster = view.Type;
             view.Select();
         }
         this.boardDrawer?.UseBooster(this.currentBooster);
+    }
+
+    private OnBoosterUse(booster:EBoosterType):void{
+        if (booster !== EBoosterType.None && Profile.Instance.SpendBooster(booster)) {
+            Profile.Instance.Save();
+        }
+        this.ResetBooster();
     }
 
     private ResetBooster():void{
@@ -108,6 +118,18 @@ export default class GameScene extends cc.Component {
         for(let i = 0; i < this.boosters.length; i++){
             this.boosters[i].Deselect();
         }
+    }
+
+    private UpdateBoostersVisual():void{
+        for(let i = 0; i < this.boosters.length; i++){
+            this.boosters[i].SetCount(Profile.Instance.GetBoosterCount(this.boosters[i].Type));
+        }
+    }
+
+    protected onDestroy(): void {
+        this.boardDrawer?.OnBoardUpdate.UnSubscribe(this.UpdateVisual, this);
+        this.boardDrawer?.OnBoosterUse.UnSubscribe(this.OnBoosterUse, this);
+        Profile.Instance.OnBoostersCountChange.UnSubscribe(this.UpdateBoostersVisual, this);
     }
 
 }

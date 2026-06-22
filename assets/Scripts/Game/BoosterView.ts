@@ -39,6 +39,18 @@ export default class BoosterView extends cc.Component {
             this.onClickAction();
     }
 
+    public SetCount(count: number): void {
+        if (this.counterLabel) {
+            this.counterLabel.string = `${count}`;
+        }
+        if (this.button) {
+            this.button.interactable = count > 0;
+        }
+        if (count <= 0) {
+            this.Deselect();
+        }
+    }
+
     public Select(){
         this.anim?.stop();
         this.anim?.play("BoosterAnimPulse");
