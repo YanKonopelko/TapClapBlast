@@ -55,6 +55,7 @@ export default class GameScene extends cc.Component {
         this.boardDrawer?.Init(board);
         this.UpdateBoostersVisual();
         this.UpdateVisual();
+        this.isGameFinished = false;
     }
 
     private UpdateVisual() {

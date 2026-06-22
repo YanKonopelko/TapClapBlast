@@ -42,6 +42,7 @@ export default class BoardDrawer extends cc.Component {
     public Init(Board:Board){
         this.board = Board;
         this.DrawBoard();
+        this.interactable = true;
     }
 
     public DrawBoard(): void {
